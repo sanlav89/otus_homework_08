@@ -84,15 +84,9 @@ void Handler::processBulk()
     }
 
     for (const auto &observer : m_loggers) {
+        observer->open();
         observer->write(ossLog.str());
         observer->close();
-    }
-}
-
-void Handler::openLog()
-{
-    for (const auto &observer : m_loggers) {
-        observer->open();
     }
 }
 

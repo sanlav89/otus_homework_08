@@ -32,7 +32,6 @@ public:
     void popOpenedBracket();
     void pushCmd(const Cmd &cmd);
     void processBulk();
-    void openLog();
     void closeLog();
 
 private:
