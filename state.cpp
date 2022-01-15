@@ -96,7 +96,7 @@ void StateDynamic::cmdClosedBracket()
 
 void StateDynamic::cmdEof()
 {
-    m_handler->closeLog();
+    // nothing to do
 }
 
 void StateDynamic::cmdOther(const Cmd &cmd)

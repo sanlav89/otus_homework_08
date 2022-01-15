@@ -32,12 +32,11 @@ public:
     void popOpenedBracket();
     void pushCmd(const Cmd &cmd);
     void processBulk();
-    void closeLog();
 
 private:
     std::istream &m_is;
     size_t m_bulkSize;
-    std::queue<Cmd> m_cmds;
+    size_t m_cmdsSize;
     std::stack<Bracket> m_brackets;
     std::list<logger::LogPtr> m_loggers;
     StateBasePtr m_state;

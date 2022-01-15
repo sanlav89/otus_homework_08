@@ -43,7 +43,8 @@ size_t Handler::bulkSize() const
 
 size_t Handler::cmdsSize() const
 {
-    return m_cmds.size();
+//    return m_cmds.size();
+    return m_cmdsSize;
 }
 
 size_t Handler::bracketsSize() const
@@ -63,38 +64,18 @@ void Handler::popOpenedBracket()
 
 void Handler::pushCmd(const Cmd &cmd)
 {
-    m_cmds.push(cmd);
+    for (const auto &observer : m_loggers) {
+        observer->pushCmd(cmd);
+    }
+    m_cmdsSize++;
 }
 
 void Handler::processBulk()
 {
-    std::ostringstream ossLog;
-    std::ostream &osLog = ossLog;
-
-    if (!m_cmds.empty()) {
-        osLog << "bulk: ";
-        while (!m_cmds.empty()) {
-            osLog << m_cmds.front();
-            m_cmds.pop();
-            if (!m_cmds.empty()) {
-                osLog << ", ";
-            }
-        }
-        osLog << std::endl;
-    }
-
     for (const auto &observer : m_loggers) {
-        observer->open();
-        observer->write(ossLog.str());
-        observer->close();
+        observer->process();
     }
-}
-
-void Handler::closeLog()
-{
-    for (const auto &observer : m_loggers) {
-        observer->close();
-    }
+    m_cmdsSize = 0;
 }
 
 bool Handler::isOpenedBracket(const Cmd &cmd)
