@@ -7,7 +7,6 @@
 #include <condition_variable>
 #include <thread>
 #include <atomic>
-
 #include "assignments.h"
 
 namespace logger {
@@ -39,13 +38,21 @@ private:
 class LogFile : public ILogger
 {
 public:
-    LogFile() = default;
+    LogFile();
+    ~LogFile();
     void process(const std::queue<bulk::Cmd> &cmds) override;
 
 private:
     std::ofstream m_logFile;
     std::string m_logFileName;
     std::queue<bulk::Cmd> m_cmds;
+    std::condition_variable m_cv;
+    std::mutex m_mutex;
+    std::thread m_thread1;
+    std::thread m_thread2;
+    std::atomic<bool> m_stopped;
+
+    void worker();
 };
 
 using LogPtr = std::unique_ptr<ILogger>;
