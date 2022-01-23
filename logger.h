@@ -4,6 +4,9 @@
 #include <memory>
 #include <iostream>
 #include <queue>
+#include <condition_variable>
+#include <thread>
+#include <atomic>
 
 #include "assignments.h"
 
@@ -19,19 +22,24 @@ class Console : public ILogger
 {
 public:
     Console(std::ostream &os = std::cout);
-//    void pushCmd(const bulk::Cmd &cmd) override;
+    ~Console();
     void process(const std::queue<bulk::Cmd> &cmds) override;
 
 private:
     std::ostream &m_os;
     std::queue<bulk::Cmd> m_cmds;
+    std::condition_variable m_cv;
+    std::mutex m_mutex;
+    std::thread m_thread;
+    std::atomic<bool> m_stopped;
+
+    void worker();
 };
 
 class LogFile : public ILogger
 {
 public:
     LogFile() = default;
-//    void pushCmd(const bulk::Cmd &cmd) override;
     void process(const std::queue<bulk::Cmd> &cmds) override;
 
 private:

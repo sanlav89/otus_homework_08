@@ -19,6 +19,9 @@ TEST(HandlerTest, Simple)
     bulk::Handler handler(3, iss);
     handler.registerLogger(logger::LogPtr{new logger::Console(oss)});
     handler.start();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // FIXME
+
     EXPECT_TRUE(oss.str() == "bulk: cmd1\n");
 }
 
@@ -28,13 +31,15 @@ TEST(HandlerTest, TaskCase1)
                            "cmd2\n"
                            "cmd3\n"
                            "cmd4\n"
-                           "cmd5\n");
+                           "cmd5\n"
+                           );
     std::ostringstream oss;
     bulk::Handler handler(3, iss);
     handler.registerLogger(logger::LogPtr{new logger::Console(oss)});
     handler.start();
 
-//    std::cout << iss.str() << std::endl;
+//    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // FIXME
+
 //    std::cout << oss.str() << std::endl;
 
     EXPECT_TRUE(oss.str() == "bulk: cmd1, cmd2, cmd3\n"
@@ -67,7 +72,7 @@ TEST(HandlerTest, TaskCase2)
     handler.registerLogger(logger::LogPtr{new logger::Console(oss)});
     handler.start();
 
-//    std::cout << iss.str() << std::endl;
+//    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // FIXME
 //    std::cout << oss.str() << std::endl;
 
     EXPECT_TRUE(oss.str() == "bulk: cmd1, cmd2\n"

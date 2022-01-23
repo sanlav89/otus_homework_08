@@ -7,33 +7,43 @@ using namespace logger;
 
 Console::Console(std::ostream &os) : m_os(os)
 {
+    m_thread = std::thread(&Console::worker, this);
 }
 
-//void Console::pushCmd(const bulk::Cmd &cmd)
-//{
-//    m_cmds.push(cmd);
-//}
+Console::~Console()
+{
+    m_thread.join();
+}
 
 void Console::process(const std::queue<bulk::Cmd> &cmds)
 {
+    std::lock_guard<std::mutex> lk(m_mutex);
     m_cmds = cmds;
-    if (!m_cmds.empty()) {
-        m_os << "bulk: ";
-        while (!m_cmds.empty()) {
-            m_os << m_cmds.front();
-            m_cmds.pop();
-            if (!m_cmds.empty()) {
-                m_os << ", ";
-            }
-        }
-        m_os << std::endl;
-    }
+    m_cv.notify_one();
 }
 
-//void LogFile::pushCmd(const bulk::Cmd &cmd)
-//{
-//    m_cmds.push(cmd);
-//}
+void Console::worker()
+{
+    while (true) {
+        std::unique_lock<std::mutex> lk(m_mutex);
+
+        while (m_cmds.empty()) {
+            m_cv.wait(lk);
+        }
+
+        if (!m_cmds.empty()) {
+            m_os << "bulk: ";
+            while (!m_cmds.empty()) {
+                m_os << m_cmds.front();
+                m_cmds.pop();
+                if (!m_cmds.empty()) {
+                    m_os << ", ";
+                }
+            }
+            m_os << std::endl;
+        }
+    }
+}
 
 void LogFile::process(const std::queue<bulk::Cmd> &cmds)
 {
