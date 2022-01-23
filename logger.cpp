@@ -9,13 +9,14 @@ Console::Console(std::ostream &os) : m_os(os)
 {
 }
 
-void Console::pushCmd(const bulk::Cmd &cmd)
-{
-    m_cmds.push(cmd);
-}
+//void Console::pushCmd(const bulk::Cmd &cmd)
+//{
+//    m_cmds.push(cmd);
+//}
 
-void Console::process()
+void Console::process(const std::queue<bulk::Cmd> &cmds)
 {
+    m_cmds = cmds;
     if (!m_cmds.empty()) {
         m_os << "bulk: ";
         while (!m_cmds.empty()) {
@@ -29,13 +30,14 @@ void Console::process()
     }
 }
 
-void LogFile::pushCmd(const bulk::Cmd &cmd)
-{
-    m_cmds.push(cmd);
-}
+//void LogFile::pushCmd(const bulk::Cmd &cmd)
+//{
+//    m_cmds.push(cmd);
+//}
 
-void LogFile::process()
+void LogFile::process(const std::queue<bulk::Cmd> &cmds)
 {
+    m_cmds = cmds;
     auto result = std::time(nullptr);
     std::ostringstream ossFilename;
     std::ostream &osFilename = ossFilename;

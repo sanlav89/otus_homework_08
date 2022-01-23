@@ -43,8 +43,8 @@ size_t Handler::bulkSize() const
 
 size_t Handler::cmdsSize() const
 {
-//    return m_cmds.size();
-    return m_cmdsSize;
+    return m_cmds.size();
+//    return m_cmdsSize;
 }
 
 size_t Handler::bracketsSize() const
@@ -64,18 +64,22 @@ void Handler::popOpenedBracket()
 
 void Handler::pushCmd(const Cmd &cmd)
 {
-    for (const auto &observer : m_loggers) {
-        observer->pushCmd(cmd);
-    }
-    m_cmdsSize++;
+//    for (const auto &observer : m_loggers) {
+//        observer->pushCmd(cmd);
+//    }
+//    m_cmdsSize++;
+    m_cmds.push(cmd);
 }
 
 void Handler::processBulk()
 {
     for (const auto &observer : m_loggers) {
-        observer->process();
+        observer->process(m_cmds);
     }
-    m_cmdsSize = 0;
+    while (!m_cmds.empty()) {
+        m_cmds.pop();
+    }
+//    m_cmdsSize = 0;
 }
 
 bool Handler::isOpenedBracket(const Cmd &cmd)

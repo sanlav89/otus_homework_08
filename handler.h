@@ -38,6 +38,7 @@ private:
     size_t m_bulkSize;
     size_t m_cmdsSize;
     std::stack<Bracket> m_brackets;
+    std::queue<Cmd> m_cmds;
     std::list<logger::LogPtr> m_loggers;
     StateBasePtr m_state;
 
