@@ -73,13 +73,15 @@ void Handler::pushCmd(const Cmd &cmd)
 
 void Handler::processBulk()
 {
-    for (const auto &observer : m_loggers) {
-        observer->process(m_cmds);
-    }
     while (!m_cmds.empty()) {
+        for (const auto &observer : m_loggers) {
+            observer->pushCmd(m_cmds.front());
+        }
         m_cmds.pop();
     }
-//    m_cmdsSize = 0;
+    for (const auto &observer : m_loggers) {
+        observer->process();
+    }
 }
 
 bool Handler::isOpenedBracket(const Cmd &cmd)

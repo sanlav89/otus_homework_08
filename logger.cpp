@@ -9,6 +9,12 @@ Logger::Logger() : m_paused(true)
 {
 }
 
+void Logger::pushCmd(const bulk::Cmd &cmd)
+{
+    std::lock_guard<std::mutex> lk(m_mutex);
+    m_cmds.push(cmd);
+}
+
 Console::Console(std::ostream &os) : Logger(), m_os(os)
 {
     m_thread = std::thread(&Console::worker, this);
@@ -19,10 +25,9 @@ Console::~Console()
     m_thread.join();
 }
 
-void Console::process(const std::queue<bulk::Cmd> &cmds)
+void Console::process()
 {
     std::lock_guard<std::mutex> lk(m_mutex);
-    m_cmds = cmds;
     m_paused = false;
     m_cv.notify_one();
 }
@@ -62,10 +67,9 @@ LogFile::~LogFile()
     m_thread2.join();
 }
 
-void LogFile::process(const std::queue<bulk::Cmd> &cmds)
+void LogFile::process()
 {
     std::lock_guard<std::mutex> lk(m_mutex);
-    m_cmds = cmds;
     m_paused = false;
     m_cv.notify_all();
 }

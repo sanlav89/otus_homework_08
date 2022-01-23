@@ -14,7 +14,8 @@ namespace logger {
 class ILogger
 {
 public:
-    virtual void process(const std::queue<bulk::Cmd> &cmds) = 0;
+    virtual void process() = 0;
+    virtual void pushCmd(const bulk::Cmd &cmd) = 0;
     virtual void worker() = 0;
 };
 
@@ -23,6 +24,8 @@ class Logger : public ILogger
 public:
     Logger();
     virtual ~Logger() = default;
+
+    void pushCmd(const bulk::Cmd &cmd) override;
 
 protected:
     std::queue<bulk::Cmd> m_cmds;
@@ -36,7 +39,7 @@ class Console : public Logger
 public:
     Console(std::ostream &os = std::cout);
     ~Console();
-    void process(const std::queue<bulk::Cmd> &cmds) override;
+    void process() override;
 
 private:
     std::ostream &m_os;
@@ -51,7 +54,7 @@ class LogFile : public Logger
 public:
     LogFile();
     ~LogFile();
-    void process(const std::queue<bulk::Cmd> &cmds) override;
+    void process() override;
 
 private:
     std::ofstream m_logFile;
