@@ -18,50 +18,8 @@ void Handler::registerLogger(logger::LogPtr logger)
 
 void Handler::start()
 {
-//    std::string cmd;
-
-//    m_mutex.lock();
-//    auto atEnd = std::getline(m_is, cmd) ? true : false;
-//    m_mutex.unlock();
-
-//    while (atEnd) {
-//        if (isOpenedBracket(cmd)) {
-//            m_state->cmdOpenedBracket();
-//        } else if (isClosedBracket(cmd)) {
-//            m_state->cmdClosedBracket();
-//        } else {
-//            m_state->cmdOther(cmd);
-//        }
-
-//        m_mutex.lock();
-//        atEnd = std::getline(m_is, cmd) ? true : false;
-//        m_mutex.unlock();
-//    }
-//    m_state->cmdEof();
-
-
-    std::vector<Cmd> cmds = {
-       "cmd1" ,
-       "cmd2" ,
-       "{"    ,
-       "cmd3" ,
-       "cmd4" ,
-       "}"    ,
-       "{"    ,
-       "cmd5" ,
-       "cmd6" ,
-       "{"    ,
-       "cmd7" ,
-       "cmd8" ,
-       "}"    ,
-       "cmd9" ,
-       "}"    ,
-       "{"    ,
-       "cmd10",
-       "cmd11"
-    };
-
-    for (const auto &cmd : cmds) {
+    std::string cmd;
+    while (std::getline(m_is, cmd)) {
         if (isOpenedBracket(cmd)) {
             m_state->cmdOpenedBracket();
         } else if (isClosedBracket(cmd)) {
@@ -86,7 +44,6 @@ size_t Handler::bulkSize() const
 size_t Handler::cmdsSize() const
 {
     return m_cmds.size();
-//    return m_cmdsSize;
 }
 
 size_t Handler::bracketsSize() const
@@ -106,10 +63,6 @@ void Handler::popOpenedBracket()
 
 void Handler::pushCmd(const Cmd &cmd)
 {
-//    for (const auto &logger : m_loggers) {
-//        logger->pushCmd(cmd);
-//    }
-//    m_cmdsSize++;
     m_cmds.push(cmd);
 }
 

@@ -25,7 +25,11 @@ class Logger : public ILogger
 {
 public:
     Logger();
-    virtual ~Logger() = default;
+    ~Logger();
+
+    void process(const bulk_t &cmds) override;
+    virtual void worker() override;
+    void stop() override;
 
 protected:
     std::queue<bulk_t> m_bulks;
@@ -34,7 +38,7 @@ protected:
     std::atomic<bool> m_stopped;
     std::vector<std::thread> m_threads;
 
-    static void processBulk(std::ostream &os, bulk_t &bulk);
+    void processOne(std::ostream &os, bulk_t &bulk);
 
 };
 
@@ -42,15 +46,12 @@ class Console : public Logger
 {
 public:
     Console(std::ostream &os = std::cout);
-    ~Console();
-    void process(const std::queue<bulk::Cmd> &cmds) override;
-    void stop() override;
 
 private:
     std::ostream &m_os;
-    std::thread m_thread;
-
     void worker() override;
+
+    void processBulk(std::ostream &os, bulk_t &bulk);
 
 };
 
@@ -58,21 +59,17 @@ class LogFile : public Logger
 {
 public:
     LogFile();
-    ~LogFile();
-    void process(const std::queue<bulk::Cmd> &cmds) override;
 
 private:
     std::ofstream m_logFile;
     std::string m_logFileName;
-    std::thread m_thread1;
-    std::thread m_thread2;
 
     void worker() override;
+
+    void openNewLogFile();
 };
 
-//using LogPtr = std::unique_ptr<ILogger>;
 using LogPtr = std::unique_ptr<Logger>;
-//using LogPtr = Logger*;
 
 }
 

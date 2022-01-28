@@ -9,35 +9,45 @@ Logger::Logger() : m_stopped(false)
 {
 }
 
-void Logger::processBulk(std::ostream &os, bulk_t &bulk)
-{
-    os << "bulk: ";
-    while (!bulk.empty()) {
-        os << bulk.front();
-        bulk.pop();
-        if (!bulk.empty()) {
-            os << ", ";
-        }
-    }
-    os << std::endl;
-}
-
-Console::Console(std::ostream &os) : Logger(), m_os(os)
-{
-    std::ios::sync_with_stdio(false);
-    m_thread = std::thread(&Console::worker, this);
-}
-
-Console::~Console()
+Logger::~Logger()
 {
     stop();
 }
 
-void Console::process(const std::queue<bulk::Cmd> &cmds)
+void Logger::process(const bulk_t &cmds)
 {
     std::lock_guard<std::mutex> lk(m_mutex);
     m_bulks.push(cmds);
     m_cv.notify_all();
+}
+
+void Logger::worker()
+{
+}
+
+void Logger::stop()
+{
+    if (!m_stopped) {
+        m_stopped = true;
+        m_cv.notify_all();
+        for (auto &thread : m_threads) {
+            thread.join();
+        }
+    }
+}
+
+void Logger::processOne(std::ostream &os, bulk_t &bulk)
+{
+    os << bulk.front();
+    bulk.pop();
+    if (!bulk.empty()) {
+        os << ", ";
+    }
+}
+
+Console::Console(std::ostream &os) : Logger(), m_os(os)
+{
+    m_threads.push_back(std::thread(&Console::worker, this));
 }
 
 void Console::worker()
@@ -45,10 +55,7 @@ void Console::worker()
     while (!m_stopped) {
 
         std::unique_lock<std::mutex> lk(m_mutex);
-        while (!m_stopped && m_bulks.empty()) {
-            m_cv.wait(lk);
-        }
-//        m_cv.wait(lk, [this]() { return m_stopped || !m_cmds.empty(); });
+        m_cv.wait(lk, [this]() { return m_stopped || !m_bulks.empty(); });
 
         while (!m_bulks.empty()) {
             processBulk(m_os, m_bulks.front());
@@ -61,73 +68,68 @@ void Console::worker()
     }
 }
 
-void Console::stop()
+void Console::processBulk(std::ostream &os, bulk_t &bulk)
 {
-    if (!m_stopped) {
-        m_stopped = true;
-        m_cv.notify_all();
-        m_thread.join();
+    os << "bulk: ";
+    while (!bulk.empty()) {
+        processOne(os, bulk);
     }
+    os << std::endl;
 }
 
 LogFile::LogFile() : Logger()
 {
-    m_thread1 = std::thread(&LogFile::worker, this);
-    m_thread2 = std::thread(&LogFile::worker, this);
-}
-
-LogFile::~LogFile()
-{
-    m_thread1.join();
-    m_thread2.join();
-}
-
-void LogFile::process(const std::queue<bulk::Cmd> &cmds)
-{
-    std::lock_guard<std::mutex> lk(m_mutex);
-    m_stopped = false;
-    m_bulks.push(cmds);
-    m_cv.notify_all();
+    m_threads.push_back(std::thread(&LogFile::worker, this));
+    m_threads.push_back(std::thread(&LogFile::worker, this));
 }
 
 void LogFile::worker()
 {
-    while (true) {
+    while (!m_stopped) {
 
         std::unique_lock<std::mutex> lk(m_mutex);
-        m_cv.wait(lk, [this]() { return !m_stopped; });
+        m_cv.wait(lk, [this]() { return m_stopped || !m_bulks.empty(); });
 
-        if (!m_logFile.is_open()) {
+        if (!m_bulks.empty()) {
 
-            // Create & open a new file
-            auto result = std::time(nullptr);
-            std::ostringstream ossFilename;
-            std::ostream &osFilename = ossFilename;
-            osFilename << "bulk" << result << "_" << std::this_thread::get_id() << ".log";
-            m_logFileName = ossFilename.str();
-            m_logFile.open(m_logFileName);
+            auto &bulk = m_bulks.front();
 
-            // write some service info to file
-            if (m_logFile.is_open()) {
-                if (!m_bulks.empty()) {
-                    m_logFile << "bulk: ";
-                }
-            } else {
-                throw "Error! File " + m_logFileName + "is not opened";
+            if (!m_logFile.is_open()) {
+                openNewLogFile();
+            }
+
+            processOne(m_logFile, bulk);
+
+            if (bulk.empty()) {
+                m_bulks.pop();
+                m_logFile.close();
             }
         }
 
-        // process next cmd
-//        m_logFile << m_cmds.front();
-        m_bulks.pop();
-
-        // in it need, close the file
-        if (!m_bulks.empty()) {
-            m_logFile << ", ";
-        } else {
-            m_logFile.close();
-            m_stopped = true;
+        if (m_stopped) {
+            break;
         }
+    }
+}
+
+void LogFile::openNewLogFile()
+{
+    static auto fileNum = 0;
+    auto result = std::time(nullptr);
+    std::ostringstream ossFilename;
+    std::ostream &osFilename = ossFilename;
+    osFilename << "bulk" << result
+               << "_" << std::this_thread::get_id()
+               << "_" << fileNum++
+               << ".log";
+    m_logFileName = ossFilename.str();
+    m_logFile.open(m_logFileName);
+
+    // write some service info to file
+    if (m_logFile.is_open()) {
+        m_logFile << "bulk: ";
+    } else {
+        throw "Error! File " + m_logFileName + "is not opened";
     }
 }
 
