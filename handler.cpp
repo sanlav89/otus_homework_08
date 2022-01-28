@@ -68,38 +68,11 @@ void Handler::pushCmd(const Cmd &cmd)
 
 void Handler::processBulk()
 {
-    std::ostringstream ossLog;
-    std::ostream &osLog = ossLog;
-
-    if (!m_cmds.empty()) {
-        osLog << "bulk: ";
-        while (!m_cmds.empty()) {
-            osLog << m_cmds.front();
-            m_cmds.pop();
-            if (!m_cmds.empty()) {
-                osLog << ", ";
-            }
-        }
-        osLog << std::endl;
+    for (const auto &logger : m_loggers) {
+        logger->process(m_cmds);
     }
-
-    for (const auto &observer : m_loggers) {
-        observer->write(ossLog.str());
-        observer->close();
-    }
-}
-
-void Handler::openLog()
-{
-    for (const auto &observer : m_loggers) {
-        observer->open();
-    }
-}
-
-void Handler::closeLog()
-{
-    for (const auto &observer : m_loggers) {
-        observer->close();
+    while (!m_cmds.empty()) {
+        m_cmds.pop();
     }
 }
 

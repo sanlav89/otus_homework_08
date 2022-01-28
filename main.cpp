@@ -12,5 +12,8 @@ int main(int argc, char *argv[])
     handler.registerLogger(logger::LogPtr{new logger::LogFile()});
     handler.start();
 
+    // wait for threads start
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
     return 0;
 }

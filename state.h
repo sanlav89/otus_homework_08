@@ -30,7 +30,7 @@ public:
     void cmdOther(const Cmd &cmd) override;
 
 private:
-    void openLogAndPushCmd(const Cmd &cmd);
+    void pushCmd(const Cmd &cmd);
 };
 
 class StateStatic : public StateBase

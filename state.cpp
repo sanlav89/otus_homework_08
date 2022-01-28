@@ -13,14 +13,13 @@ StateEmpty::StateEmpty(Handler *handler) : StateBase(handler)
 
 void StateEmpty::cmdOpenedBracket()
 {
-    m_handler->openLog();
     m_handler->pushOpenedBracket();
     m_handler->setState(StateBasePtr{new StateDynamic(m_handler)});
 }
 
 void StateEmpty::cmdClosedBracket()
 {
-    openLogAndPushCmd("}");
+    pushCmd("}");
 }
 
 void StateEmpty::cmdEof()
@@ -30,12 +29,11 @@ void StateEmpty::cmdEof()
 
 void StateEmpty::cmdOther(const Cmd &cmd)
 {
-    openLogAndPushCmd(cmd);
+    pushCmd(cmd);
 }
 
-void StateEmpty::openLogAndPushCmd(const Cmd &cmd)
+void StateEmpty::pushCmd(const Cmd &cmd)
 {
-    m_handler->openLog();
     m_handler->pushCmd(cmd);
     if (m_handler->cmdsSize() == m_handler->bulkSize()) {
         m_handler->processBulk();
@@ -52,7 +50,6 @@ void StateStatic::cmdOpenedBracket()
 {
     m_handler->pushOpenedBracket();
     m_handler->processBulk();
-    m_handler->openLog();
     m_handler->setState(StateBasePtr{new StateDynamic(m_handler)});
 }
 
@@ -99,7 +96,7 @@ void StateDynamic::cmdClosedBracket()
 
 void StateDynamic::cmdEof()
 {
-    m_handler->closeLog();
+    // nothing to do
 }
 
 void StateDynamic::cmdOther(const Cmd &cmd)

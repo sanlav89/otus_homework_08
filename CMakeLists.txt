@@ -27,12 +27,12 @@ set (
 
 # EXECUTABLE
 add_executable(bulk main.cpp ${SOURCES} ${HEADERS})
-# add_executable(gtest_handler gtest_handler.cpp ${SOURCES} ${HEADERS})
+ add_executable(gtest_handler gtest_handler.cpp ${SOURCES} ${HEADERS})
 
 # PROPERTIES
 set_target_properties (
     bulk
-#    gtest_handler
+    gtest_handler
         PROPERTIES
             CMAKE_CXX_STANDARD 17
             CMAKE_CXX_STANDARD_REQUIRED ON
@@ -47,16 +47,16 @@ if (MSVC)
     target_compile_options(bulk PRIVATE
         /W4
     )
-#    target_compile_options(gtest_handler PRIVATE
-#        /W4
-#    )
+    target_compile_options(gtest_handler PRIVATE
+        /W4
+    )
 else ()
     target_compile_options(bulk PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
-#    target_compile_options(gtest_handler PRIVATE
-#        -Wall -Wextra -pedantic -Werror
-#    )
+    target_compile_options(gtest_handler PRIVATE
+        -Wall -Wextra -pedantic -Werror
+    )
 endif()
 
 ### Package
@@ -68,25 +68,25 @@ set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_CONTACT example@example.com)
 include(CPack)
 
-### UNIT-tests
+## UNIT-tests
 # GoogleTest package
-#include(FetchContent)
-#FetchContent_Declare(
-#  googletest
-#  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-#)
-## For Windows: Prevent overriding the parent project's compiler/linker settings
-#set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-#FetchContent_MakeAvailable(googletest)
-#include(GoogleTest)
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+include(GoogleTest)
 
 # Tests linking
-#gtest_discover_tests(gtest_handler)
-#target_link_libraries(
-#    gtest_handler
-#    gtest_main
-#)
+gtest_discover_tests(gtest_handler)
+target_link_libraries(
+    gtest_handler
+    gtest_main
+)
 
 # Testing
-#enable_testing()
-#add_test(gtest_handler gtest_handler)
+enable_testing()
+add_test(gtest_handler gtest_handler)
