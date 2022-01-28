@@ -11,12 +11,14 @@
 
 namespace logger {
 
+using bulk_t = std::queue<bulk::Cmd>;
+
 class ILogger
 {
 public:
-    virtual void process() = 0;
-    virtual void pushCmd(const bulk::Cmd &cmd) = 0;
+    virtual void process(const bulk_t &bulk) = 0;
     virtual void worker() = 0;
+    virtual void stop() = 0;
 };
 
 class Logger : public ILogger
@@ -25,13 +27,15 @@ public:
     Logger();
     virtual ~Logger() = default;
 
-    void pushCmd(const bulk::Cmd &cmd) override;
-
 protected:
-    std::queue<bulk::Cmd> m_cmds;
+    std::queue<bulk_t> m_bulks;
     std::condition_variable m_cv;
     std::mutex m_mutex;
-    std::atomic<bool> m_paused;
+    std::atomic<bool> m_stopped;
+    std::vector<std::thread> m_threads;
+
+    static void processBulk(std::ostream &os, bulk_t &bulk);
+
 };
 
 class Console : public Logger
@@ -39,7 +43,8 @@ class Console : public Logger
 public:
     Console(std::ostream &os = std::cout);
     ~Console();
-    void process() override;
+    void process(const std::queue<bulk::Cmd> &cmds) override;
+    void stop() override;
 
 private:
     std::ostream &m_os;
@@ -54,7 +59,7 @@ class LogFile : public Logger
 public:
     LogFile();
     ~LogFile();
-    void process() override;
+    void process(const std::queue<bulk::Cmd> &cmds) override;
 
 private:
     std::ofstream m_logFile;
@@ -65,7 +70,9 @@ private:
     void worker() override;
 };
 
+//using LogPtr = std::unique_ptr<ILogger>;
 using LogPtr = std::unique_ptr<Logger>;
+//using LogPtr = Logger*;
 
 }
 

@@ -5,53 +5,68 @@
 
 using namespace logger;
 
-Logger::Logger() : m_paused(true)
+Logger::Logger() : m_stopped(false)
 {
 }
 
-void Logger::pushCmd(const bulk::Cmd &cmd)
+void Logger::processBulk(std::ostream &os, bulk_t &bulk)
 {
-    std::lock_guard<std::mutex> lk(m_mutex);
-    m_cmds.push(cmd);
+    os << "bulk: ";
+    while (!bulk.empty()) {
+        os << bulk.front();
+        bulk.pop();
+        if (!bulk.empty()) {
+            os << ", ";
+        }
+    }
+    os << std::endl;
 }
 
 Console::Console(std::ostream &os) : Logger(), m_os(os)
 {
+    std::ios::sync_with_stdio(false);
     m_thread = std::thread(&Console::worker, this);
 }
 
 Console::~Console()
 {
-    m_thread.join();
+    stop();
 }
 
-void Console::process()
+void Console::process(const std::queue<bulk::Cmd> &cmds)
 {
     std::lock_guard<std::mutex> lk(m_mutex);
-    m_paused = false;
-    m_cv.notify_one();
+    m_bulks.push(cmds);
+    m_cv.notify_all();
 }
 
 void Console::worker()
 {
-    while (true) {
-        std::unique_lock<std::mutex> lk(m_mutex);
-        m_cv.wait(lk, [this]() { return !m_paused; });
+    while (!m_stopped) {
 
-        // process all cmds in queue
-        if (!m_cmds.empty()) {
-            m_os << "bulk: ";
-            while (!m_cmds.empty()) {
-                m_os << m_cmds.front();
-                m_cmds.pop();
-                if (!m_cmds.empty()) {
-                    m_os << ", ";
-                }
-            }
-            m_os << std::endl;
+        std::unique_lock<std::mutex> lk(m_mutex);
+        while (!m_stopped && m_bulks.empty()) {
+            m_cv.wait(lk);
+        }
+//        m_cv.wait(lk, [this]() { return m_stopped || !m_cmds.empty(); });
+
+        while (!m_bulks.empty()) {
+            processBulk(m_os, m_bulks.front());
+            m_bulks.pop();
         }
 
-        m_paused = true;
+        if (m_stopped) {
+            break;
+        }
+    }
+}
+
+void Console::stop()
+{
+    if (!m_stopped) {
+        m_stopped = true;
+        m_cv.notify_all();
+        m_thread.join();
     }
 }
 
@@ -67,10 +82,11 @@ LogFile::~LogFile()
     m_thread2.join();
 }
 
-void LogFile::process()
+void LogFile::process(const std::queue<bulk::Cmd> &cmds)
 {
     std::lock_guard<std::mutex> lk(m_mutex);
-    m_paused = false;
+    m_stopped = false;
+    m_bulks.push(cmds);
     m_cv.notify_all();
 }
 
@@ -79,7 +95,7 @@ void LogFile::worker()
     while (true) {
 
         std::unique_lock<std::mutex> lk(m_mutex);
-        m_cv.wait(lk, [this]() { return !m_paused; });
+        m_cv.wait(lk, [this]() { return !m_stopped; });
 
         if (!m_logFile.is_open()) {
 
@@ -93,7 +109,7 @@ void LogFile::worker()
 
             // write some service info to file
             if (m_logFile.is_open()) {
-                if (!m_cmds.empty()) {
+                if (!m_bulks.empty()) {
                     m_logFile << "bulk: ";
                 }
             } else {
@@ -102,15 +118,15 @@ void LogFile::worker()
         }
 
         // process next cmd
-        m_logFile << m_cmds.front();
-        m_cmds.pop();
+//        m_logFile << m_cmds.front();
+        m_bulks.pop();
 
         // in it need, close the file
-        if (!m_cmds.empty()) {
+        if (!m_bulks.empty()) {
             m_logFile << ", ";
         } else {
             m_logFile.close();
-            m_paused = true;
+            m_stopped = true;
         }
     }
 }

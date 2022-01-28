@@ -9,8 +9,10 @@ int main(int argc, char *argv[])
 
     bulk::Handler handler(bulkSize);
     handler.registerLogger(logger::LogPtr{new logger::Console()});
-    handler.registerLogger(logger::LogPtr{new logger::LogFile()});
+//    handler.registerLogger(logger::LogPtr{new logger::LogFile()});
     handler.start();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     return 0;
 }

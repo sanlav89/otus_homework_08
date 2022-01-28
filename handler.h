@@ -41,6 +41,7 @@ private:
     std::queue<Cmd> m_cmds;
     std::list<logger::LogPtr> m_loggers;
     StateBasePtr m_state;
+    std::mutex m_mutex;
 
     static bool isOpenedBracket(const Cmd &cmd);
     static bool isClosedBracket(const Cmd &cmd);

@@ -18,8 +18,50 @@ void Handler::registerLogger(logger::LogPtr logger)
 
 void Handler::start()
 {
-    std::string cmd;
-    while (std::getline(m_is, cmd)) {
+//    std::string cmd;
+
+//    m_mutex.lock();
+//    auto atEnd = std::getline(m_is, cmd) ? true : false;
+//    m_mutex.unlock();
+
+//    while (atEnd) {
+//        if (isOpenedBracket(cmd)) {
+//            m_state->cmdOpenedBracket();
+//        } else if (isClosedBracket(cmd)) {
+//            m_state->cmdClosedBracket();
+//        } else {
+//            m_state->cmdOther(cmd);
+//        }
+
+//        m_mutex.lock();
+//        atEnd = std::getline(m_is, cmd) ? true : false;
+//        m_mutex.unlock();
+//    }
+//    m_state->cmdEof();
+
+
+    std::vector<Cmd> cmds = {
+       "cmd1" ,
+       "cmd2" ,
+       "{"    ,
+       "cmd3" ,
+       "cmd4" ,
+       "}"    ,
+       "{"    ,
+       "cmd5" ,
+       "cmd6" ,
+       "{"    ,
+       "cmd7" ,
+       "cmd8" ,
+       "}"    ,
+       "cmd9" ,
+       "}"    ,
+       "{"    ,
+       "cmd10",
+       "cmd11"
+    };
+
+    for (const auto &cmd : cmds) {
         if (isOpenedBracket(cmd)) {
             m_state->cmdOpenedBracket();
         } else if (isClosedBracket(cmd)) {
@@ -64,8 +106,8 @@ void Handler::popOpenedBracket()
 
 void Handler::pushCmd(const Cmd &cmd)
 {
-//    for (const auto &observer : m_loggers) {
-//        observer->pushCmd(cmd);
+//    for (const auto &logger : m_loggers) {
+//        logger->pushCmd(cmd);
 //    }
 //    m_cmdsSize++;
     m_cmds.push(cmd);
@@ -73,14 +115,11 @@ void Handler::pushCmd(const Cmd &cmd)
 
 void Handler::processBulk()
 {
-    while (!m_cmds.empty()) {
-        for (const auto &observer : m_loggers) {
-            observer->pushCmd(m_cmds.front());
-        }
-        m_cmds.pop();
+    for (const auto &logger : m_loggers) {
+        logger->process(m_cmds);
     }
-    for (const auto &observer : m_loggers) {
-        observer->process();
+    while (!m_cmds.empty()) {
+        m_cmds.pop();
     }
 }
 
