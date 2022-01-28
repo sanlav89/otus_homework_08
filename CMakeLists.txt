@@ -27,7 +27,7 @@ set (
 
 # EXECUTABLE
 add_executable(bulk main.cpp ${SOURCES} ${HEADERS})
- add_executable(gtest_handler gtest_handler.cpp ${SOURCES} ${HEADERS})
+add_executable(gtest_handler gtest_handler.cpp ${SOURCES} ${HEADERS})
 
 # PROPERTIES
 set_target_properties (
@@ -41,6 +41,9 @@ set_target_properties (
 # INCLUDEPATH
 
 # Linking
+find_package (Threads)
+target_link_libraries (bulk ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (gtest_handler ${CMAKE_THREAD_LIBS_INIT})
 
 # Compiler options
 if (MSVC)
