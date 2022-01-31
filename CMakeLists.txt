@@ -13,6 +13,7 @@ set (
         handler.cpp
         state.cpp
         logger.cpp
+        async.cpp
 )
 
 # HEADERS
@@ -22,6 +23,7 @@ set (
         handler.h
         state.h
         logger.h
+        async.h
 
 )
 
