@@ -14,6 +14,7 @@ set (
         state.cpp
         logger.cpp
         async.cpp
+        context.cpp
 )
 
 # HEADERS
@@ -24,7 +25,7 @@ set (
         state.h
         logger.h
         async.h
-
+        context.h
 )
 
 # EXECUTABLE

@@ -47,5 +47,7 @@ private:
 
 };
 
+using HandlerPtr = std::unique_ptr<Handler>;
+
 }
 
