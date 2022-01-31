@@ -2,6 +2,7 @@
 #include <iostream>
 #include <ctime>
 #include <sstream>
+#include <direct.h>
 
 using namespace logger;
 
@@ -79,6 +80,7 @@ void Console::processBulk(std::ostream &os, bulk_t &bulk)
 
 LogFile::LogFile() : Logger()
 {
+    _mkdir("./log");
     m_threads.push_back(std::thread(&LogFile::worker, this));
     m_threads.push_back(std::thread(&LogFile::worker, this));
 }
@@ -118,7 +120,7 @@ void LogFile::openNewLogFile()
     auto result = std::time(nullptr);
     std::ostringstream ossFilename;
     std::ostream &osFilename = ossFilename;
-    osFilename << "bulk" << result
+    osFilename << "log/bulk" << result
                << "_" << std::this_thread::get_id()
                << "_" << fileNum++
                << ".log";
