@@ -10,16 +10,16 @@ handle_t connect(std::size_t bulk)
     return handler;
 }
 
-void receive(handle_t handle, const char *data, std::size_t size)
+void receive(handle_t /*handle*/, const char */*data*/, std::size_t/* size*/)
 {
-    bulk::Handler *handler = static_cast<bulk::Handler *>(handle);
-    handler->receive(data, size);
+//    bulk::Handler *handler = static_cast<bulk::Handler *>(handle);
+//    handler->receive(data, size);
 }
 
 void disconnect(handle_t handle)
 {
     bulk::Handler *handler = static_cast<bulk::Handler *>(handle);
-    handler->stop();
+//    handler->stop();
     delete handler;
 }
 

@@ -16,8 +16,9 @@ public:
 
     // High level logic
     Handler(const size_t &bulkSize, std::istream &is = std::cin);
-    void registerLogger(logger::LogPtr logger);
-    void start();
+    void reveiveCmd(const Cmd &cmd);
+    void receiveCmdEof();
+//    void start();
 
     // State Pattern side
     void setState(StateBasePtr state);
@@ -41,6 +42,7 @@ private:
     std::list<logger::LogPtr> m_loggers;
     StateBasePtr m_state;
 
+    void registerLogger(logger::LogPtr logger);
     static bool isOpenedBracket(const Cmd &cmd);
     static bool isClosedBracket(const Cmd &cmd);
     static bool isAnyBracket(const Cmd &cmd, Bracket anyBracket);
