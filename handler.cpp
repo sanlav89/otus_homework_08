@@ -4,12 +4,11 @@
 
 using namespace bulk;
 
-Handler::Handler(const size_t &bulkSize, std::istream &is)
-    : m_is(is)
-    , m_bulkSize(bulkSize)
+Handler::Handler(const size_t &bulkSize, std::ostream &os)
+    : m_bulkSize(bulkSize)
     , m_state(StateBasePtr{new StateEmpty(this)})
 {
-    registerLogger(logger::LogPtr{new logger::Console()});
+    registerLogger(logger::LogPtr{new logger::Console(os)});
     registerLogger(logger::LogPtr{new logger::LogFile()});
 }
 

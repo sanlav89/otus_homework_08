@@ -15,10 +15,9 @@ class Handler
 public:
 
     // High level logic
-    Handler(const size_t &bulkSize, std::istream &is = std::cin);
+    Handler(const size_t &bulkSize, std::ostream &os = std::cout);
     void reveiveCmd(const Cmd &cmd);
     void receiveCmdEof();
-//    void start();
 
     // State Pattern side
     void setState(StateBasePtr state);
@@ -35,7 +34,6 @@ public:
     void processBulk();
 
 private:
-    std::istream &m_is;
     size_t m_bulkSize;
     std::stack<Bracket> m_brackets;
     std::queue<Cmd> m_cmds;
