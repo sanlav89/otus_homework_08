@@ -14,7 +14,7 @@ int main(/*int argc, char*argv[]*/)
     async::receive(h, "\n2\n3\n4\n5\n6\n{\na\n", 15);
     async::receive(h, "b\nc\nd\n}\n89\n", 11);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Cheat
+//    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Cheat
 
     async::disconnect(h);
     async::disconnect(h2);

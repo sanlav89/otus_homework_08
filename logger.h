@@ -18,10 +18,8 @@ class ILogger
 public:
     virtual void process(const bulk_t &bulk) = 0;
     virtual void stop() = 0;
-protected:
     virtual void worker() = 0;
 };
-
 
 class Logger : public ILogger
 {
