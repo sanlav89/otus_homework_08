@@ -10,16 +10,8 @@ Logger::Logger() : m_stopped(false)
 {
 }
 
-Logger::~Logger()
+void Logger::process(const bulk_t &)
 {
-    stop();
-}
-
-void Logger::process(const bulk_t &cmds)
-{
-    std::lock_guard<std::mutex> lk(m_mutex);
-    m_bulks.push(cmds);
-    m_cv.notify_all();
 }
 
 void Logger::worker()
@@ -28,13 +20,6 @@ void Logger::worker()
 
 void Logger::stop()
 {
-    if (!m_stopped) {
-        m_stopped = true;
-        m_cv.notify_all();
-        for (auto &thread : m_threads) {
-            thread.join();
-        }
-    }
 }
 
 void Logger::processOne(std::ostream &os, bulk_t &bulk)
@@ -46,14 +31,37 @@ void Logger::processOne(std::ostream &os, bulk_t &bulk)
     }
 }
 
-Console::Console(std::ostream &os) : Logger(), m_os(os)
+Console::Console(std::ostream &os)
+    : Logger()
+    , m_os(os)
+    , m_threadLog(std::thread(&Console::worker, this))
 {
-    m_threads.push_back(std::thread(&Console::worker, this));
+}
+
+Console::~Console()
+{
+    stop();
+}
+
+void Console::process(const bulk_t &bulk)
+{
+    std::lock_guard<std::mutex> lk(m_mutex);
+    m_bulks.push(bulk);
+    m_cv.notify_one();
+}
+
+void Console::stop()
+{
+    if (!m_stopped) {
+        m_stopped = true;
+        m_cv.notify_all();
+        m_threadLog.join();
+    }
 }
 
 void Console::worker()
 {
-    while (!m_stopped) {
+    do {
 
         std::unique_lock<std::mutex> lk(m_mutex);
         m_cv.wait(lk, [this]() { return m_stopped || !m_bulks.empty(); });
@@ -66,28 +74,55 @@ void Console::worker()
         if (m_stopped) {
             break;
         }
-    }
+    } while (!m_stopped);
 }
 
 void Console::processBulk(std::ostream &os, bulk_t &bulk)
 {
     os << "bulk: ";
     while (!bulk.empty()) {
-        processOne(os, bulk);
+        os << bulk.front();
+        bulk.pop();
+        if (!bulk.empty()) {
+            os << ", ";
+        }
     }
     os << std::endl;
 }
 
-LogFile::LogFile() : Logger()
+LogFile::LogFile()
+    : Logger()
+    , m_threadFile1(std::thread(&LogFile::worker, this))
+    , m_threadFile2(std::thread(&LogFile::worker, this))
 {
     _mkdir("./log");
-    m_threads.push_back(std::thread(&LogFile::worker, this));
-    m_threads.push_back(std::thread(&LogFile::worker, this));
+}
+
+LogFile::~LogFile()
+{
+    stop();
+}
+
+void LogFile::process(const bulk_t &bulk)
+{
+    std::lock_guard<std::mutex> lk(m_mutex);
+    m_bulks.push(bulk);
+    m_cv.notify_all();
+}
+
+void LogFile::stop()
+{
+    if (!m_stopped) {
+        m_stopped = true;
+        m_cv.notify_all();
+        m_threadFile1.join();
+        m_threadFile2.join();
+    }
 }
 
 void LogFile::worker()
 {
-    while (!m_stopped) {
+    do {
 
         std::unique_lock<std::mutex> lk(m_mutex);
         m_cv.wait(lk, [this]() { return m_stopped || !m_bulks.empty(); });
@@ -111,7 +146,7 @@ void LogFile::worker()
         if (m_stopped) {
             break;
         }
-    }
+    } while (!m_stopped);
 }
 
 void LogFile::openNewLogFile()
@@ -134,5 +169,3 @@ void LogFile::openNewLogFile()
         throw "Error! File " + m_logFileName + "is not opened";
     }
 }
-
-

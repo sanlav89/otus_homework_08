@@ -27,8 +27,6 @@ TEST(HandlerTest, Simple)
     }
     handler.receiveCmdEof();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
     EXPECT_TRUE(oss.str() == "bulk: cmd1\n");
 }
 
@@ -49,8 +47,6 @@ TEST(HandlerTest, TaskCase1)
         handler.reveiveCmd(cmd);
     }
     handler.receiveCmdEof();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_TRUE(oss.str() == "bulk: cmd1, cmd2, cmd3\n"
                              "bulk: cmd4, cmd5\n");
@@ -87,8 +83,6 @@ TEST(HandlerTest, TaskCase2)
         handler.reveiveCmd(cmd);
     }
     handler.receiveCmdEof();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     EXPECT_TRUE(oss.str() == "bulk: cmd1, cmd2\n"
                              "bulk: cmd3, cmd4\n"

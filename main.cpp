@@ -2,23 +2,8 @@
 #include "async.h"
 #include "handler.h"
 
-int main(int argc, char*argv[])
+int main(/*int argc, char*argv[]*/)
 {
-    assert(argc == 2);
-    int bulkSize = std::atoi(argv[1]);
-    assert(bulkSize > 0);
-
-//    bulk::Handler handler(bulkSize);
-
-//    bulk::Cmd cmd;
-//    while (std::getline(std::cin, cmd)) {
-//        handler.reveiveCmd(cmd);
-//    }
-//    handler.receiveCmdEof();
-
-//    // wait for threads start
-//    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
     std::size_t bulk = 5;
 
     auto h = async::connect(bulk);
