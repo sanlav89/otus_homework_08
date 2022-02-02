@@ -5,9 +5,11 @@ namespace async {
 
 logger::LogPtr m_console = nullptr;
 logger::LogPtr m_logfile = nullptr;
+std::mutex m_mutex;
 
 handle_t connect(std::size_t bulk)
 {
+    std::lock_guard<std::mutex> lk(m_mutex);
     if (m_console == nullptr) {
         m_console = logger::LogPtr{new logger::Console(std::cout)};
     }
@@ -24,12 +26,14 @@ handle_t connect(std::size_t bulk)
 
 void receive(handle_t handle, const char *data, std::size_t size)
 {
+    std::lock_guard<std::mutex> lk(m_mutex);
     bulk::Handler *context = static_cast<bulk::Handler *>(handle);
     context->receive(data, size);
 }
 
 void disconnect(handle_t handle)
 {
+    std::lock_guard<std::mutex> lk(m_mutex);
     bulk::Handler *context = static_cast<bulk::Handler *>(handle);
     context->receiveEof();
     delete context;
