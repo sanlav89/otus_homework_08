@@ -1,6 +1,5 @@
 #include "logger.h"
-#include <iostream>
-#include <ctime>
+#include <chrono>
 #include <sstream>
 #include <direct.h>
 
@@ -143,21 +142,17 @@ void LogFile::worker()
             }
         }
 
-        if (m_stopped) {
-            break;
-        }
-    } while (!m_stopped);
+    } while (!m_stopped || !m_bulks.empty());
 }
 
 void LogFile::openNewLogFile()
 {
     static auto fileNum = 0;
-    auto result = std::time(nullptr);
+    auto result = std::chrono::system_clock::now().time_since_epoch().count();
     std::ostringstream ossFilename;
     std::ostream &osFilename = ossFilename;
     osFilename << "log/bulk" << result
-               << "_" << std::this_thread::get_id()
-               << "_" << fileNum++
+               << "_" << std::this_thread::get_id() << fileNum++
                << ".log";
     m_logFileName = ossFilename.str();
     m_logFile.open(m_logFileName);

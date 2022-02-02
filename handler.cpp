@@ -4,12 +4,22 @@
 
 using namespace bulk;
 
-Handler::Handler(const size_t &bulkSize, std::ostream &os)
+Handler::Handler(const size_t &bulkSize)
     : m_bulkSize(bulkSize)
     , m_state(StateBasePtr{new StateEmpty(this)})
 {
-    registerLogger(logger::LogPtr{new logger::Console(os)});
-    registerLogger(logger::LogPtr{new logger::LogFile()});
+}
+
+void Handler::receive(const char *data, size_t size)
+{
+    for (auto i = 0u; i < size; i++) {
+        if (data[i] == '\n') {
+            reveiveCmd(m_buffer);
+            m_buffer.clear();
+        } else {
+            m_buffer.append({data[i]});
+        }
+    }
 }
 
 void Handler::reveiveCmd(const Cmd &cmd)
@@ -23,7 +33,7 @@ void Handler::reveiveCmd(const Cmd &cmd)
     }
 }
 
-void Handler::receiveCmdEof()
+void Handler::receiveEof()
 {
     m_state->cmdEof();
 }

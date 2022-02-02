@@ -13,6 +13,9 @@ namespace logger {
 
 using bulk_t = std::queue<bulk::Cmd>;
 
+class Logger;
+using LogPtr = std::shared_ptr<Logger>;
+
 class ILogger
 {
 public:
@@ -84,9 +87,6 @@ private:
     void openNewLogFile();
 
 };
-
-
-using LogPtr = std::unique_ptr<Logger>;
 
 }
 
