@@ -1,0 +1,80 @@
+# CMAKE VERSION
+cmake_minimum_required(VERSION 3.5)
+
+# PROJECT
+set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
+set(PROJECT_VESRION 0.0.${PATCH_VERSION})
+set(PROJECT_NAME "async" CACHE STRING "Project name")
+project(${PROJECT_NAME} VERSION ${PROJECT_VESRION})
+set(SOURCES_DIR "../async")
+
+# SOURCES
+set (
+    SOURCES
+        ${SOURCES_DIR}/handler.cpp
+        ${SOURCES_DIR}/state.cpp
+        ${SOURCES_DIR}/logger.cpp
+        gtest_handler.cpp
+)
+
+# HEADERS
+set (
+    HEADERS
+        ${SOURCES_DIR}/assignments.h
+        ${SOURCES_DIR}/handler.h
+        ${SOURCES_DIR}/state.h
+        ${SOURCES_DIR}/logger.h
+)
+
+# EXECUTABLE
+add_executable(gtest_handler ${SOURCES} ${HEADERS})
+
+# PROPERTIES
+set_target_properties (
+    gtest_handler
+        PROPERTIES
+            CMAKE_CXX_STANDARD 17
+            CMAKE_CXX_STANDARD_REQUIRED ON
+)
+
+# INCLUDEPATH
+target_include_directories(gtest_handler PRIVATE ${SOURCES_DIR})
+
+# Linking
+find_package (Threads)
+target_link_libraries (gtest_handler ${CMAKE_THREAD_LIBS_INIT})
+
+# Compiler options
+if (MSVC)
+
+    target_compile_options(gtest_handler PRIVATE
+        /W4
+    )
+else ()
+    target_compile_options(gtest_handler PRIVATE
+        -Wall -Wextra -pedantic -Werror
+    )
+endif()
+
+## UNIT-tests
+# GoogleTest package
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+include(GoogleTest)
+
+# Tests linking
+gtest_discover_tests(gtest_handler)
+target_link_libraries(
+    gtest_handler
+    gtest_main
+)
+
+# Testing
+enable_testing()
+add_test(gtest_handler gtest_handler)
