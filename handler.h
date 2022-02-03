@@ -15,9 +15,10 @@ class Handler
 public:
 
     // High level logic
-    Handler(const size_t &bulkSize, std::istream &is = std::cin);
+    Handler(const size_t &bulkSize);
     void registerLogger(logger::LogPtr logger);
-    void start();
+    void receive(const char *data, size_t size);
+    void receiveEof();
 
     // State Pattern side
     void setState(StateBasePtr state);
@@ -34,18 +35,22 @@ public:
     void processBulk();
 
 private:
-    std::istream &m_is;
     size_t m_bulkSize;
+    std::string m_buffer;
     std::stack<Bracket> m_brackets;
     std::queue<Cmd> m_cmds;
     std::list<logger::LogPtr> m_loggers;
     StateBasePtr m_state;
+
+    void reveiveCmd(const Cmd &cmd);
 
     static bool isOpenedBracket(const Cmd &cmd);
     static bool isClosedBracket(const Cmd &cmd);
     static bool isAnyBracket(const Cmd &cmd, Bracket anyBracket);
 
 };
+
+using HandlerPtr = std::unique_ptr<Handler>;
 
 }
 

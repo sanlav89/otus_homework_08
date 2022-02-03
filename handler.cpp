@@ -4,31 +4,43 @@
 
 using namespace bulk;
 
-Handler::Handler(const size_t &bulkSize, std::istream &is)
-    : m_is(is)
-    , m_bulkSize(bulkSize)
+Handler::Handler(const size_t &bulkSize)
+    : m_bulkSize(bulkSize)
     , m_state(StateBasePtr{new StateEmpty(this)})
 {
+}
+
+void Handler::receive(const char *data, size_t size)
+{
+    for (auto i = 0u; i < size; i++) {
+        if (data[i] == '\n') {
+            reveiveCmd(m_buffer);
+            m_buffer.clear();
+        } else {
+            m_buffer.append({data[i]});
+        }
+    }
+}
+
+void Handler::reveiveCmd(const Cmd &cmd)
+{
+    if (isOpenedBracket(cmd)) {
+        m_state->cmdOpenedBracket();
+    } else if (isClosedBracket(cmd)) {
+        m_state->cmdClosedBracket();
+    } else {
+        m_state->cmdOther(cmd);
+    }
+}
+
+void Handler::receiveEof()
+{
+    m_state->cmdEof();
 }
 
 void Handler::registerLogger(logger::LogPtr logger)
 {
     m_loggers.emplace_back(std::move(logger));
-}
-
-void Handler::start()
-{
-    std::string cmd;
-    while (std::getline(m_is, cmd)) {
-        if (isOpenedBracket(cmd)) {
-            m_state->cmdOpenedBracket();
-        } else if (isClosedBracket(cmd)) {
-            m_state->cmdClosedBracket();
-        } else {
-            m_state->cmdOther(cmd);
-        }
-    }
-    m_state->cmdEof();
 }
 
 void Handler::setState(StateBasePtr state)
