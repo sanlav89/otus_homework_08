@@ -8,6 +8,10 @@ set(PROJECT_NAME "async" CACHE STRING "Project name")
 project(${PROJECT_NAME} VERSION ${PROJECT_VESRION})
 set(SOURCES_DIR "../async")
 
+# Boost
+find_package(Boost COMPONENTS filesystem REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+
 # SOURCES
 set (
     SOURCES
@@ -42,7 +46,11 @@ target_include_directories(gtest_handler PRIVATE ${SOURCES_DIR})
 
 # Linking
 find_package (Threads)
-target_link_libraries (gtest_handler ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries (
+    gtest_handler
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${Boost_FILESYSTEM_LIBRARY}
+)
 
 # Compiler options
 if (MSVC)

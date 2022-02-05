@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.5)
 
 project(async LANGUAGES CXX)
 
@@ -6,7 +6,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(GNUInstallDirs)
+# Boost
+find_package(Boost COMPONENTS filesystem REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
 
 add_library(async SHARED
   async.cpp
@@ -24,12 +26,10 @@ target_compile_definitions(async PRIVATE ASYNC_LIBRARY)
 
 # LINKING
 find_package (Threads)
-target_link_libraries(async ${CMAKE_THREAD_LIBS_INIT})
-
-set_target_properties (
+target_link_libraries (
     async
-        PROPERTIES
-            PUBLIC_HEADER async.h
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${Boost_FILESYSTEM_LIBRARY}
 )
 
 if (MSVC)
@@ -41,10 +41,3 @@ else ()
         -Wall -Wextra -pedantic -Werror
     )
 endif()
-
-install (
-    TARGETS async
-        LIBRARY DESTINATION ./${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ./${CMAKE_INSTALL_INCLUDEDIR}
-)
-
