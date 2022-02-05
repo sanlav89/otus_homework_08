@@ -1,9 +1,10 @@
 #include "logger.h"
 #include <chrono>
 #include <sstream>
-#include <direct.h>
+#include <boost/filesystem.hpp>
 
 using namespace logger;
+namespace fs = boost::filesystem;
 
 Logger::Logger() : m_stopped(false)
 {
@@ -39,7 +40,7 @@ Console::Console(std::ostream &os)
 
 Console::~Console()
 {
-    stop();
+    Console::stop();
 }
 
 void Console::process(const bulk_t &bulk)
@@ -94,12 +95,12 @@ LogFile::LogFile()
     , m_threadFile1(std::thread(&LogFile::worker, this))
     , m_threadFile2(std::thread(&LogFile::worker, this))
 {
-    _mkdir("./log");
+    fs::create_directory("./log");
 }
 
 LogFile::~LogFile()
 {
-    stop();
+    LogFile::stop();
 }
 
 void LogFile::process(const bulk_t &bulk)

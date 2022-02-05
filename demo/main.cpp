@@ -1,11 +1,12 @@
 #include <cassert>
+#include <thread>
 #include "async.h"
-#include "handler.h"
 
 int main()
 {
-    // Example from homework_08 (another thread)
+//    // Example from homework_08 (another thread)
     auto task = []() {
+//        std::cout << "hello" << std::endl;
 
         std::size_t bulk = 5;
 
@@ -22,7 +23,7 @@ int main()
     };
     std::thread t1(task);
 
-    // Example from homework_06
+//    // Example from homework_06
     auto h3 = async::connect(3);
     async::receive(h3, "cmd1\ncmd2\ncmd3\nc", 16);
     auto h4 = async::connect(3);
