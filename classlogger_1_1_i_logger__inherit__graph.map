@@ -1,6 +1,0 @@
-<map id="logger::ILogger" name="logger::ILogger">
-<area shape="rect" id="node1" title=" " alt="" coords="74,5,181,32"/>
-<area shape="rect" id="node2" href="$classlogger_1_1_logger.html" title=" " alt="" coords="76,80,179,107"/>
-<area shape="rect" id="node3" href="$classlogger_1_1_console.html" title=" " alt="" coords="5,155,116,181"/>
-<area shape="rect" id="node4" href="$classlogger_1_1_log_file.html" title=" " alt="" coords="141,155,247,181"/>
-</map>
