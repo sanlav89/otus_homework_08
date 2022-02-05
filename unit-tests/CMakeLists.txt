@@ -11,6 +11,7 @@ set(SOURCES_DIR "../async")
 # Boost
 find_package(Boost COMPONENTS filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
+include_directories(${SOURCES_DIR})
 
 # SOURCES
 set (
@@ -18,7 +19,9 @@ set (
         ${SOURCES_DIR}/handler.cpp
         ${SOURCES_DIR}/state.cpp
         ${SOURCES_DIR}/logger.cpp
+        ${SOURCES_DIR}/async.cpp
         gtest_handler.cpp
+        gtest_async.cpp
 )
 
 # HEADERS
@@ -28,14 +31,17 @@ set (
         ${SOURCES_DIR}/handler.h
         ${SOURCES_DIR}/state.h
         ${SOURCES_DIR}/logger.h
+        ${SOURCES_DIR}/async.h
 )
 
 # EXECUTABLE
 add_executable(gtest_handler ${SOURCES} ${HEADERS})
+add_executable(gtest_async ${SOURCES} ${HEADERS})
 
 # PROPERTIES
 set_target_properties (
     gtest_handler
+    gtest_async
         PROPERTIES
             CMAKE_CXX_STANDARD 17
             CMAKE_CXX_STANDARD_REQUIRED ON
@@ -43,6 +49,7 @@ set_target_properties (
 
 # INCLUDEPATH
 target_include_directories(gtest_handler PRIVATE ${SOURCES_DIR})
+target_include_directories(gtest_async PRIVATE ${SOURCES_DIR})
 
 # Linking
 find_package (Threads)
@@ -51,15 +58,25 @@ target_link_libraries (
         ${CMAKE_THREAD_LIBS_INIT}
         ${Boost_FILESYSTEM_LIBRARY}
 )
+target_link_libraries (
+    gtest_async
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${Boost_FILESYSTEM_LIBRARY}
+)
 
 # Compiler options
 if (MSVC)
-
     target_compile_options(gtest_handler PRIVATE
+        /W4
+    )
+    target_compile_options(gtest_async PRIVATE
         /W4
     )
 else ()
     target_compile_options(gtest_handler PRIVATE
+        -Wall -Wextra -pedantic -Werror
+    )
+    target_compile_options(gtest_async PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
 endif()
@@ -82,7 +99,13 @@ target_link_libraries(
     gtest_handler
     gtest_main
 )
+gtest_discover_tests(gtest_async)
+target_link_libraries(
+    gtest_async
+    gtest_main
+)
 
 # Testing
 enable_testing()
 add_test(gtest_handler gtest_handler)
+add_test(gtest_async gtest_async)

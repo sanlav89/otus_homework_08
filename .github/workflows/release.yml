@@ -14,6 +14,8 @@ jobs:
         with:
           submodules: true
       - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      - run: sudo apt-get update -y
+      - run: sudo apt-get install libboost-filesystem-dev -y
       - run: cmake --build .
       - run: cmake --build . --target test
       - run: cmake --build . --target package
@@ -34,8 +36,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bulk-0.0.${{ github.run_number }}-Linux.deb
-          asset_name: bulk-0.0.${{ github.run_number }}-Linux.deb
+          asset_path: ./async-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: async-0.0.${{ github.run_number }}-Linux.deb
           asset_content_type: application/vnd.debian.binary-package
       - name: Doxygen Action
         uses: mattnotmitt/doxygen-action@v1.1.0

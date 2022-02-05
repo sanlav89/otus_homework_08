@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
+# PROJECT
 project(async LANGUAGES CXX)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,18 +10,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Boost COMPONENTS filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
-add_library(async SHARED
-  async.cpp
-  async.h
-  logger.cpp
-  logger.h
-  assignments.h
-  state.cpp
-  state.h
-  handler.cpp
-  handler.h
-)
-
+file(GLOB_RECURSE SOURCES *.cpp)
+file(GLOB_RECURSE HEADERS *.h)
+add_library(async SHARED ${SOURCES} ${HEADERS})
 target_compile_definitions(async PRIVATE ASYNC_LIBRARY)
 
 # LINKING
